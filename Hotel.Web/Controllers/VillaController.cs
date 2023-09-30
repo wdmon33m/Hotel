@@ -1,21 +1,21 @@
-﻿using Hotel.Domain.Entities;
-using Hotel.Infrastructure.Data;
+﻿using Hotel.Application.Common.Interfaces;
+using Hotel.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hotel.Web.Controllers
 {
     public class VillaController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public VillaController(ApplicationDbContext db)
+        public VillaController(IUnitOfWork unitOfWork)
         {
-            _db = db;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
         {
-            var villas = _db.Villas.ToList();
+            var villas = _unitOfWork.Villa.GetAll();
             return View(villas);
         }
         public IActionResult Create()
@@ -31,15 +31,15 @@ namespace Hotel.Web.Controllers
                 return View(obj);
             }
 
-            _db.Villas.Add(obj);
-            _db.SaveChanges();
+            _unitOfWork.Villa.Add(obj);
+            _unitOfWork.Villa.Save();
             TempData["success"] = "Villa has been created successfully.";
             return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Update(int villaId)
         {
-            Villa? obj = _db.Villas.FirstOrDefault(x => x.Id == villaId);
+            Villa? obj = _unitOfWork.Villa.Get(x => x.Id == villaId);
             
             if (obj == null)
             {
@@ -56,15 +56,15 @@ namespace Hotel.Web.Controllers
                 return View(obj);
             }
 
-            _db.Update(obj);
-            _db.SaveChanges();
+            _unitOfWork.Villa.Update(obj);
+            _unitOfWork.Villa.Save();
             TempData["success"] = "Villa has been updated successfully.";
             return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Delete(int villaId)
         {
-            Villa? obj = _db.Villas.FirstOrDefault(x => x.Id == villaId);
+            Villa? obj = _unitOfWork.Villa.Get(x => x.Id == villaId);
 
             if (obj == null)
             {
@@ -76,9 +76,9 @@ namespace Hotel.Web.Controllers
         [HttpPost]
         public IActionResult Delete(Villa obj)
         {
-            _db.Remove(obj);
-            _db.SaveChanges();
-            TempData["error"] = "Villa has been deleted successfully.";
+            _unitOfWork.Villa.Remove(obj);
+            _unitOfWork.Villa.Save();
+            TempData["success"] = "Villa has been deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
     }

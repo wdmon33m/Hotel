@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel.Web", "Hotel.Web\Hotel.Web.csproj", "{4BB58863-1F20-4924-A584-EC0B37798A69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hotel.Web", "Hotel.Web\Hotel.Web.csproj", "{4BB58863-1F20-4924-A584-EC0B37798A69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel.Domain", "Hotel.Domain\Hotel.Domain.csproj", "{CBBCA506-35A9-43FB-9237-CD42A3A470F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hotel.Domain", "Hotel.Domain\Hotel.Domain.csproj", "{CBBCA506-35A9-43FB-9237-CD42A3A470F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel.Application", "Hotel.Application\Hotel.Application.csproj", "{0498BCF1-E02B-4F1B-9226-F0CE0098EE49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hotel.Application", "Hotel.Application\Hotel.Application.csproj", "{0498BCF1-E02B-4F1B-9226-F0CE0098EE49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotel.Infrastructure", "Hotel.Infrastructure\Hotel.Infrastructure.csproj", "{92103EBF-15C6-452F-BED4-68545EF84154}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hotel.Infrastructure", "Hotel.Infrastructure\Hotel.Infrastructure.csproj", "{92103EBF-15C6-452F-BED4-68545EF84154}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
