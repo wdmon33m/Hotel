@@ -1,5 +1,4 @@
 ﻿using Hotel.Application.Common.Interfaces;
-using Hotel.Infrastructure.Repository;
 using Hotel.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

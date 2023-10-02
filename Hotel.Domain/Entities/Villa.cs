@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hotel.Domain.Entities
 {
@@ -13,8 +16,13 @@ namespace Hotel.Domain.Entities
         public int Sqft { get; set; }
         [Range(1,10)]
         public int Occupancy { get; set; }
+        [NotMapped]
+        public IFormFile? Image { get; set; }
         public string? ImageUrl { get; set; } = "https://placehold.co/600x400";
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set;}
+        
+        [ValidateNever]
+        public IEnumerable<Amenity> VillaAmenity { get; set; }
     }
 }
