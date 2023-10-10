@@ -47,8 +47,10 @@ namespace Hotel.Web.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index","Home");
         }
-        public IActionResult Register()
+        public IActionResult Register(string returnUrl = null)
         {
+            returnUrl ??= Url.Content("~/");
+
             if (!_roleManager.RoleExistsAsync(SD.Role_Admin).GetAwaiter().GetResult())
             {
                 _roleManager.CreateAsync(new IdentityRole(SD.Role_Admin)).Wait();
@@ -61,7 +63,8 @@ namespace Hotel.Web.Controllers
                 {
                     Text = r.Name,
                     Value = r.Name
-                })
+                }),
+                RedirectUrl = returnUrl
             };
 
             return View(registerVM);
@@ -70,52 +73,55 @@ namespace Hotel.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterVM registerVM)
         {
-            ApplicationUser user = new()
-            { 
-                Name = registerVM.Name, 
-                Email = registerVM.Email,
-                PhoneNumber = registerVM.PhoneNumber,
-                NormalizedEmail = registerVM.Email.ToUpper(),
-                EmailConfirmed = true,
-                UserName = registerVM.Email,
-                CreatedAt = DateTime.Now
-            };
 
-            var result = await _userManager.CreateAsync(user, registerVM.Password);
-
-            if (result.Succeeded)
+            if (ModelState.IsValid)
             {
-                if (!string.IsNullOrEmpty(registerVM.Role))
+                ApplicationUser user = new()
                 {
-                    await _userManager.AddToRoleAsync(user, registerVM.Role);
-                }
-                else
+                    Name = registerVM.Name,
+                    Email = registerVM.Email,
+                    PhoneNumber = registerVM.PhoneNumber,
+                    NormalizedEmail = registerVM.Email.ToUpper(),
+                    EmailConfirmed = true,
+                    UserName = registerVM.Email,
+                    CreatedAt = DateTime.Now
+                };
+
+                var result = await _userManager.CreateAsync(user, registerVM.Password);
+
+                if (result.Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(user, SD.Role_Customer);
+                    if (!string.IsNullOrEmpty(registerVM.Role))
+                    {
+                        await _userManager.AddToRoleAsync(user, registerVM.Role);
+                    }
+                    else
+                    {
+                        await _userManager.AddToRoleAsync(user, SD.Role_Customer);
+                    }
+
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    if (string.IsNullOrEmpty(registerVM.RedirectUrl))
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        return LocalRedirect(registerVM.RedirectUrl);
+                    }
                 }
 
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                if (string.IsNullOrEmpty(registerVM.RedirectUrl))
+                foreach (var error in result.Errors)
                 {
-                    return RedirectToAction("Index", "Home");
+                    ModelState.AddModelError("", error.Description);
                 }
-                else
+
+                registerVM.RoleList = _roleManager.Roles.Select(r => new SelectListItem
                 {
-                    return LocalRedirect(registerVM.RedirectUrl);
-                }
+                    Text = r.Name,
+                    Value = r.Name
+                });
             }
-
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError("", error.Description);
-            }
-
-            registerVM.RoleList = _roleManager.Roles.Select(r => new SelectListItem
-            {
-                Text = r.Name,
-                Value = r.Name
-            });
-
             return View(registerVM);
         }
 

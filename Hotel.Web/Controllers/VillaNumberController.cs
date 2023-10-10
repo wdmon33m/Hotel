@@ -58,7 +58,7 @@ namespace Hotel.Web.Controllers
             }
 
             _unitOfWork.VillaNumber.Add(obj.VillaNumber);
-            _unitOfWork.VillaNumber.Save();
+            _unitOfWork.Save();
             TempData["success"] = "Villa has been created successfully.";
             return RedirectToAction(nameof(Index));
         }
@@ -91,7 +91,7 @@ namespace Hotel.Web.Controllers
             }
 
             _unitOfWork.VillaNumber.Update(obj.VillaNumber);
-            _unitOfWork.VillaNumber.Save();
+            _unitOfWork.Save();
             TempData["success"] = "Villa has been updated successfully.";
             return RedirectToAction(nameof(Index));
         }
@@ -120,7 +120,7 @@ namespace Hotel.Web.Controllers
         public IActionResult Delete(VillaNumberVM obj)
         {
             _unitOfWork.VillaNumber.Remove(obj.VillaNumber);
-            _unitOfWork.VillaNumber.Save();
+            _unitOfWork.Save();
             TempData["success"] = "Villa has been deleted successfully.";
             return RedirectToAction(nameof(Index));
         }

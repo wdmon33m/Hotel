@@ -1,4 +1,5 @@
 ﻿using Hotel.Application.Common.Interfaces;
+using Hotel.Application.Dto;
 using Hotel.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -9,16 +10,26 @@ namespace Hotel.Infrastructure.Repository
     {
         private readonly ApplicationDbContext _db;
         private readonly DbSet<T> dbSet;
+        private readonly ResponseDto _response;
 
         public Repository(ApplicationDbContext db)
         {
             _db = db;
             dbSet = _db.Set<T>();
+            _response = new();
         }
 
-        public void Add(T entity)
+        public ResponseDto Add(T entity)
         {
-            dbSet.Add(entity);
+            try
+            {
+                _response.Result = dbSet.Add(entity);
+                return _response;
+            }
+            catch (Exception ex)
+            {
+                return _response.Exception(ex.Message);
+            }
         }
 
         public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
@@ -57,9 +68,17 @@ namespace Hotel.Infrastructure.Repository
             return query.ToList();
         }
 
-        public void Remove(T entity)
+        public ResponseDto Remove(T entity)
         {
-            dbSet.Remove(entity);
+            try
+            {
+                _response.Result = dbSet.Remove(entity);
+                return _response;
+            }
+            catch (Exception ex)
+            {
+                return _response.Exception(ex.Message);
+            }
         }
     }
 }

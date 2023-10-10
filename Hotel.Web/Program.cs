@@ -1,25 +1,44 @@
 using Hotel.Application.Common.Interfaces;
+using Hotel.Application.Utility;
 using Hotel.Domain.Entities;
 using Hotel.Infrastructure.Data;
 using Hotel.Infrastructure.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
 });
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.ConfigureApplicationCookie(option =>
+{
+    option.AccessDeniedPath = SD.AccessDeniedPath;
+    option.LoginPath = SD.LoginPath;
+});
+
+builder.Services.Configure<IdentityOptions>(option =>
+{
+    option.Password.RequiredLength = 3;
+    option.Password.RequireUppercase = false;
+    option.Password.RequireLowercase = false;
+    option.Password.RequireDigit = false;
+    option.Password.RequireNonAlphanumeric = false;
+});
+
 var app = builder.Build();
+
+StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:Secretkey").Get<string>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

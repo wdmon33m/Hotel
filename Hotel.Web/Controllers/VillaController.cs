@@ -45,7 +45,7 @@ namespace Hotel.Web.Controllers
                 obj.ImageUrl = @"\images\VillaImages\" + fileName;
             }
             _unitOfWork.Villa.Add(obj);
-            _unitOfWork.Villa.Save();
+            _unitOfWork.Save();
             TempData["success"] = "Villa has been created successfully.";
             return RedirectToAction(nameof(Index));
         }
@@ -92,7 +92,7 @@ namespace Hotel.Web.Controllers
             }
 
             _unitOfWork.Villa.Update(obj);
-            _unitOfWork.Villa.Save();
+            _unitOfWork.Save();
             TempData["success"] = "Villa has been updated successfully.";
             return RedirectToAction(nameof(Index));
         }
@@ -126,7 +126,7 @@ namespace Hotel.Web.Controllers
                 }
 
                 _unitOfWork.Villa.Remove(objFromDb);
-                _unitOfWork.Villa.Save();
+                _unitOfWork.Save();
                 TempData["success"] = "Villa has been deleted successfully.";
             }
            

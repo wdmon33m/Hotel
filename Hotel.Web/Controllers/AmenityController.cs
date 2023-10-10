@@ -61,7 +61,7 @@ namespace Hotel.Web.Controllers
             }
 
             _unitOfWork.Amenity.Add(obj.Amenity);
-            _unitOfWork.Amenity.Save();
+            _unitOfWork.Save();
             TempData["success"] = "Amenity has been created successfully.";
             return RedirectToAction(nameof(Index));
         }
@@ -94,7 +94,7 @@ namespace Hotel.Web.Controllers
             }
 
             _unitOfWork.Amenity.Update(obj.Amenity);
-            _unitOfWork.Amenity.Save();
+            _unitOfWork.Save();
             TempData["success"] = "Amenity has been updated successfully.";
             return RedirectToAction(nameof(Index));
         }
@@ -122,7 +122,7 @@ namespace Hotel.Web.Controllers
         public IActionResult Delete(AmenityVM obj)
         {
             _unitOfWork.Amenity.Remove(obj.Amenity);
-            _unitOfWork.Amenity.Save();
+            _unitOfWork.Save();
             TempData["success"] = "Amenity has been deleted successfully.";
             return RedirectToAction(nameof(Index));
         }

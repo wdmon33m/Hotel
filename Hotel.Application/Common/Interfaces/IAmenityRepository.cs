@@ -1,10 +1,10 @@
-﻿using Hotel.Domain.Entities;
+﻿using Hotel.Application.Dto;
+using Hotel.Domain.Entities;
 
 namespace Hotel.Application.Common.Interfaces
 {
     public interface IAmenityRepository : IRepository<Amenity>
     {
-        void Update(Amenity entity);
-        void Save();
+        ResponseDto Update(Amenity entity);
     }
 }

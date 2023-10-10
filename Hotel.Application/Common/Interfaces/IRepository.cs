@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using Hotel.Application.Dto;
+using System.Linq.Expressions;
 
 namespace Hotel.Application.Common.Interfaces
 {
@@ -6,7 +7,7 @@ namespace Hotel.Application.Common.Interfaces
     {
         IEnumerable<T> GetAll(Expression<Func<T,bool>>? filter = null, string? includeProperties = null); 
         T Get(Expression<Func<T,bool>> filter, string? includeProperties = null); 
-        void Add (T entity);
-        void Remove (T entity);
+        ResponseDto Add (T entity);
+        ResponseDto Remove (T entity);
     }
 }
