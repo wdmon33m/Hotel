@@ -5,7 +5,6 @@ using Hotel.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Hotel.Web.Controllers
 {
@@ -84,7 +83,7 @@ namespace Hotel.Web.Controllers
                     NormalizedEmail = registerVM.Email.ToUpper(),
                     EmailConfirmed = true,
                     UserName = registerVM.Email,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now.ToDateOnly()
                 };
 
                 var result = await _userManager.CreateAsync(user, registerVM.Password);
