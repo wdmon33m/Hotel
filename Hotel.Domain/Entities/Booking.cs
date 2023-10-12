@@ -21,8 +21,10 @@ namespace Hotel.Domain.Entities
         [Required]
         public string Name { get; set; }
         [Required]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         [Display(Name = "Phone Number")]
+        [DataType(DataType.PhoneNumber)]
         public string? PhoneNumber { get; set; }
 
         [Required]
@@ -31,13 +33,16 @@ namespace Hotel.Domain.Entities
         public string? Status { get; set; }
 
         [Required]
-        public DateTime? BookingDate { get; set; }
+        public DateOnly? BookingDate { get; set; }
         [Required]
         [Display(Name = "Check In Date")]
-        public DateTime CheckInDate { get; set; }
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        public DateOnly CheckInDate { get; set; }
         [Required]
         [Display(Name = "Check Out Date")]
-        public DateTime CheckOutDate { get; set; }
+        [DataType(DataType.Date)]
+        public DateOnly CheckOutDate { get; set; }
 
         public bool IsPaymentSuccessfull { get; set; }
         public DateTime PaymentDate { get; set; }
@@ -45,6 +50,9 @@ namespace Hotel.Domain.Entities
         public string? StripePaymentIntendId { get; set;}
         public DateTime ActualCheckInDate { get; set; }
         public DateTime ActualCheckOutDate { get; set; }
+        [Display(Name = "Villa Number")]
         public int VillaNumber { get; set; }
+        [NotMapped]
+        public List<VillaNumber> VillaNumbers { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Hotel.Application.Utility
+﻿using Hotel.Domain.Entities;
+
+namespace Hotel.Application.Utility
 {
     public static class SD
     {

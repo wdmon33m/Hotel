@@ -14,7 +14,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
+    var connectionString = builder.Configuration.GetConnectionString("DefualtConnection");
+    option.UseSqlServer(connectionString, x => x.UseDateOnlyTimeOnly());
 });
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

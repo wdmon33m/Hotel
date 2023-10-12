@@ -31,8 +31,8 @@
                 <input asp-for="VillaId" hidden />
                 <input asp-for="UserId" hidden />
                 <input asp-for="Nights" hidden />
-                <input asp-for="CheckInDate" hidden />
-                <input asp-for="CheckOutDate" hidden />
+                <input asp-for="CheckInDate" type="text" hidden />
+                <input asp-for="CheckOutDate" type="text" hidden />
 
                 <div class="row pt-1 mb-3 " style="border-radius:20px; ">
                     <div class="col-12">
@@ -56,16 +56,12 @@
                     <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                 </div>
                 <div class="form-group pt-2">
-                    <label asp-for="CheckInDate" class="text-warning">Check in Date</label>
-                    <span class="form-control">
-                        @Model.CheckInDate.ToShortDateString()
-                    </span>
+                    <label asp-for="CheckInDate" class="text-warning"></label>
+                    <input asp-for="CheckInDate" type="text" class="form-control" />
                 </div>
                 <div class="form-group pt-2">
-                    <label asp-for="CheckOutDate"  class="text-warning">Check Out Date</label>
-                    <span class="form-control">
-                        @Model.CheckOutDate.ToShortDateString()
-                    </span>
+                    <label asp-for="CheckOutDate" class="text-warning"></label>
+                    <input asp-for="CheckOutDate" type="text" class="form-control" />
                 </div>
                 <div class="form-group pt-2">
                     <label asp-for="Nights"  class="text-warning">No. of nights</label>

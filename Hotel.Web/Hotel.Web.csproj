@@ -4,9 +4,11 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>c4bcef81-c62f-45ca-bc2d-009e54477f2a</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ErikEJ.EntityFrameworkCore.SqlServer.DateOnlyTimeOnly" Version="7.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\images\VillaImages\" />
+    <Folder Include="wwwroot\lib\client-side\" />
   </ItemGroup>
 
 </Project>

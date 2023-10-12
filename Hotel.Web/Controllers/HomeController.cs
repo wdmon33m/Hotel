@@ -42,21 +42,22 @@ namespace Hotel.Web.Controllers
 
         public IActionResult GetVillasByDate(int nights, DateOnly checkInDate)
         {
-            var VillaList = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity");
+            var villaList = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity");
+            var villaNumberList = _unitOfWork.VillaNumber.GetAll().ToList();
+            var bookedVillas = _unitOfWork.Booking.GetAll(u => u.Status == SD.Status_Approved ||
+                                u.Status == SD.Status_CheckIn).ToList();
 
-            foreach (var villa in VillaList)
+            foreach (var villa in villaList)
             {
-                if (villa.Id % 2 == 0)
-                {
-                    villa.IsAvailable = false;
-                }
+                villa.IsAvailable = _unitOfWork.Villa.IsVillaAvailble(
+                    villa.Id, villaNumberList, checkInDate, nights, bookedVillas);
             }
 
             HomeVM homeVM = new()
-            {
+            {   
                 CheckInDate = checkInDate,
                 Nights = nights,
-                VillaList = VillaList
+                VillaList = villaList
             };
             return PartialView("_VillaList", homeVM);
         }

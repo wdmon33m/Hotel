@@ -29,7 +29,7 @@ namespace Hotel.Infrastructure.Repository
             }
         }
 
-        public ResponseDto UpdateStatus(int bookingId, string bookingStatus)
+        public ResponseDto UpdateStatus(int bookingId, string bookingStatus,int villaNumber = 0)
         {
             try
             {
@@ -42,7 +42,9 @@ namespace Hotel.Infrastructure.Repository
                     return _response;
                 }
 
+                bookingFromDb.VillaNumber = villaNumber;
                 bookingFromDb.Status = bookingStatus;
+
                 if (bookingStatus == SD.Status_CheckIn)
                 {
                     bookingFromDb.ActualCheckInDate = DateTime.Now;
