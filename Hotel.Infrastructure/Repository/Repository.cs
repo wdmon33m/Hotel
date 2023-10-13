@@ -1,5 +1,5 @@
-﻿using Hotel.Application.Common.Interfaces;
-using Hotel.Application.Dto;
+﻿using Hotel.Application.Common.Dto;
+using Hotel.Application.Common.Interfaces;
 using Hotel.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -53,7 +53,7 @@ namespace Hotel.Infrastructure.Repository
                 foreach (var includeProp in includeProperties
                     .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    query = query.Include(includeProp);
+                    query = query.Include(includeProp.Trim());
                 }
             }
             return query.FirstOrDefault();
@@ -81,7 +81,7 @@ namespace Hotel.Infrastructure.Repository
                 foreach (var includeProp in includeProperties
                     .Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    query = query.Include(includeProp);
+                    query = query.Include(includeProp.Trim());
                 }
             }
             return query.ToList();

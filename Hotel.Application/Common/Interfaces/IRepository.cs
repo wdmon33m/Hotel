@@ -1,4 +1,4 @@
-﻿using Hotel.Application.Dto;
+﻿using Hotel.Application.Common.Dto;
 using System.Linq.Expressions;
 
 namespace Hotel.Application.Common.Interfaces

@@ -1,4 +1,4 @@
-﻿using Hotel.Application.Common.Interfaces;
+﻿using Hotel.Application.Services.Interface;
 using Hotel.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,17 +8,17 @@ namespace Hotel.Web.Controllers
     [Authorize]
     public class VillaController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IVillaService _villaService;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        public VillaController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+        public VillaController(IVillaService villaService, IWebHostEnvironment webHostEnvironment)
         {
-            _unitOfWork = unitOfWork;
+            _villaService = villaService;
             _webHostEnvironment = webHostEnvironment;
         }
 
         public IActionResult Index()
         {
-            var villas = _unitOfWork.Villa.GetAll();
+            var villas = _villaService.GetAllVillas();
             return View(villas);
         }
         public IActionResult Create()
@@ -34,30 +34,27 @@ namespace Hotel.Web.Controllers
                 return View(obj);
             }
 
-            if (obj.Image is not null)
+            var response = _villaService.CreateVilla(obj, _webHostEnvironment.WebRootPath);
+
+            if (response is not null && response.IsSuccess)
             {
-                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(obj.Image.FileName);
-                string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, @"images\VillaImages");
-
-                using var fileStream = new FileStream(Path.Combine(imagePath, fileName), FileMode.Create);
-                obj.Image.CopyTo(fileStream);
-
-                obj.ImageUrl = @"\images\VillaImages\" + fileName;
+                TempData["success"] = "Villa has been created successfully.";
+                return RedirectToAction(nameof(Index));
             }
-            _unitOfWork.Villa.Add(obj);
-            _unitOfWork.Save();
-            TempData["success"] = "Villa has been created successfully.";
-            return RedirectToAction(nameof(Index));
+
+            TempData["error"] = response?.ErrorMessage;
+            return View(obj);
         }
 
         public IActionResult Update(int villaId)
         {
-            Villa? obj = _unitOfWork.Villa.Get(x => x.Id == villaId);
+            Villa? obj = _villaService.GetVilla(villaId);
             
             if (obj == null)
             {
                 return RedirectToAction("Error","Home");
             }
+
             return View(obj);
         }
 
@@ -69,68 +66,44 @@ namespace Hotel.Web.Controllers
                 return View(obj);
             }
 
+            var response = _villaService.UpdateVilla(obj, _webHostEnvironment.WebRootPath);
 
-            if (obj.Image is not null)
+            if (response is not null && response.IsSuccess)
             {
-                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(obj.Image.FileName);
-                string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, @"images\VillaImages");
-
-                if (!string.IsNullOrEmpty(obj.ImageUrl))
-                {
-                    var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, obj.ImageUrl.TrimStart('\\'));
-
-                    if (System.IO.File.Exists(oldImagePath))
-                    {
-                        System.IO.File.Delete(oldImagePath);
-                    }
-                }
-
-                using var fileStream = new FileStream(Path.Combine(imagePath, fileName), FileMode.Create);
-                obj.Image.CopyTo(fileStream);
-
-                obj.ImageUrl = @"\images\VillaImages\" + fileName;
+                TempData["success"] = "Villa has been updated successfully.";
+                return RedirectToAction(nameof(Index));
             }
 
-            _unitOfWork.Villa.Update(obj);
-            _unitOfWork.Save();
-            TempData["success"] = "Villa has been updated successfully.";
-            return RedirectToAction(nameof(Index));
+            TempData["error"] = response?.ErrorMessage;
+            return View(obj);
         }
 
         public IActionResult Delete(int villaId)
         {
-            Villa? obj = _unitOfWork.Villa.Get(x => x.Id == villaId);
+            Villa? obj = _villaService.GetVilla(villaId);
 
             if (obj == null)
             {
                 return RedirectToAction("Error", "Home");
             }
+
             return View(obj);
         }
 
         [HttpPost]
         public IActionResult Delete(Villa obj)
         {
-            Villa? objFromDb = _unitOfWork.Villa.Get(u => u.Id == obj.Id);
 
-            if (objFromDb is not null)
+            var response = _villaService.DeleteVilla(obj.Id, _webHostEnvironment.WebRootPath);
+
+            if (response is not null && response.IsSuccess)
             {
-                if (!string.IsNullOrEmpty(obj.ImageUrl) && !obj.ImageUrl.Equals(@"https://placehold.co/600x400"))
-                {
-                    var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, objFromDb.ImageUrl.TrimStart('\\'));
-
-                    if (System.IO.File.Exists(oldImagePath))
-                    {
-                        System.IO.File.Delete(oldImagePath);
-                    }
-                }
-
-                _unitOfWork.Villa.Remove(objFromDb);
-                _unitOfWork.Save();
                 TempData["success"] = "Villa has been deleted successfully.";
+                return RedirectToAction(nameof(Index));
             }
-           
-            return RedirectToAction(nameof(Index));
+
+            TempData["error"] = response?.ErrorMessage;
+            return View(obj);
         }
     }
 }

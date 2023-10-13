@@ -1,6 +1,6 @@
-﻿namespace Hotel.Web.Models.ViewModels
+﻿namespace Hotel.Application.Common.Dto
 {
-    public class PieChartVM
+    public class PieChartDto
     {
         public decimal[]? Series { get; set; }
         public string[]? Labels { get; set; }

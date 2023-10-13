@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Hotel.Application.Dto
+namespace Hotel.Application.Common.Dto
 {
     public class ResponseDto
     {

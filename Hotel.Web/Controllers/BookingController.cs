@@ -1,25 +1,34 @@
-﻿using Hotel.Application.Common.Interfaces;
-using Hotel.Application.Dto;
+﻿using Hotel.Application.Common.Dto;
+using Hotel.Application.Common.Interfaces;
+using Hotel.Application.Services.Interface;
 using Hotel.Application.Utility;
 using Hotel.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Stripe.Checkout;
-using Stripe.Identity;
 using System.Security.Claims;
 
 namespace Hotel.Web.Controllers
 {
     public class BookingController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ResponseDto _response;
-
-        public BookingController(IUnitOfWork unitOfWork)
+        private readonly IVillaNumberService _villaNumberService;
+        private readonly IVillaService _villaService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IBookingService _bookingService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public BookingController(IVillaNumberService villaNumberService, 
+            IVillaService villaService, UserManager<ApplicationUser> userManager, 
+            IBookingService bookingService, IWebHostEnvironment webHostEnvironment)
         {
-            _unitOfWork = unitOfWork;
-            _response = new();
+            _villaNumberService = villaNumberService;
+            _villaService = villaService;
+            _userManager = userManager;
+            _bookingService = bookingService;
+            _webHostEnvironment = webHostEnvironment;
         }
+
         [Authorize]
         public IActionResult Index()
         {
@@ -32,10 +41,11 @@ namespace Hotel.Web.Controllers
             var cliamIdentity = (ClaimsIdentity)User.Identity;
             var userId = cliamIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            ApplicationUser user = _unitOfWork.User.Get(u => u.Id == userId);
+            ApplicationUser user = _userManager.FindByIdAsync(userId).GetAwaiter().GetResult();
+
             Booking booking = new()
             {
-                Villa = _unitOfWork.Villa.Get(u => u.Id == villaId, includeProperties: "VillaAmenity"),
+                Villa = _villaService.GetVilla(villaId),
                 VillaId = villaId,
                 Nights = nights,
                 CheckInDate = checkInDate,
@@ -55,18 +65,12 @@ namespace Hotel.Web.Controllers
         [HttpPost]
         public IActionResult FinalizeBooking(Booking booking)
         {
-            var villa = _unitOfWork.Villa.Get(v => v.Id == booking.VillaId);
+            var villa = _villaService.GetVilla(booking.VillaId);
 
             booking.TotalCost = villa.Price * booking.Nights;
             booking.Status = SD.Status_Pending;
-            booking.BookingDate = DateTime.Now.ToDateOnly();
 
-            var villaNumberList = _unitOfWork.VillaNumber.GetAll().ToList();
-            var bookedVillas = _unitOfWork.Booking.GetAll(u => u.Status == SD.Status_Approved ||
-                                u.Status == SD.Status_CheckIn).ToList();
-
-            villa.IsAvailable = _unitOfWork.Villa.IsVillaAvailble(
-                villa.Id, villaNumberList, booking.CheckInDate, booking.Nights, bookedVillas);
+            villa.IsAvailable = _villaService.IsVillaAvailble(villa.Id, booking.CheckInDate, booking.Nights);
 
             if (!villa.IsAvailable)
             {
@@ -80,8 +84,12 @@ namespace Hotel.Web.Controllers
                 });
             }
 
-            _unitOfWork.Booking.Add(booking);
-            _unitOfWork.Save();
+            var response = _bookingService.CreateBooking(booking);
+            if (response is null || !response.IsSuccess)
+            {
+                TempData["error"] = response?.ErrorMessage;
+                return RedirectToAction(nameof(FinalizeBooking), new { villaId = villa.Id, checkInDate = booking.CheckInDate, nights = booking .Nights});
+            }
 
 
             var domain = Request.Scheme + "://" + Request.Host.Value + "/";
@@ -111,8 +119,11 @@ namespace Hotel.Web.Controllers
             var service = new SessionService();
             Session session = service.Create(options);
 
-            _unitOfWork.Booking.UpdateStripePaymentId(booking.Id, session.Id, session.PaymentIntentId);
-            _unitOfWork.Save();
+            response = _bookingService.UpdateStripePaymentId(booking.Id, session.Id, session.PaymentIntentId);
+            if (response is null || !response.IsSuccess)
+            {
+                TempData["error"] = response?.ErrorMessage;
+            }
 
             Response.Headers.Add("Location", session.Url);
             return new StatusCodeResult(303);
@@ -121,7 +132,7 @@ namespace Hotel.Web.Controllers
         [Authorize]
         public IActionResult BookingConfirmation(int bookingId)
         {
-            Booking bookingFromDb = _unitOfWork.Booking.Get(b => b.Id == bookingId, includeProperties: "User,Villa");
+            Booking bookingFromDb = _bookingService.GetBookingById(bookingId);
 
             if (bookingFromDb.Status == SD.Status_Pending)
             {
@@ -132,9 +143,8 @@ namespace Hotel.Web.Controllers
 
                 if (session.PaymentStatus == "paid")
                 {
-                    _unitOfWork.Booking.UpdateStatus(bookingId, SD.Status_Approved);
-                    _unitOfWork.Booking.UpdateStripePaymentId(bookingFromDb.Id, session.Id, session.PaymentIntentId);
-                    _unitOfWork.Save();
+                    _bookingService.UpdateStatus(bookingId, SD.Status_Approved);
+                    _bookingService.UpdateStripePaymentId(bookingFromDb.Id, session.Id, session.PaymentIntentId);
                 }
             }
             return View(bookingId);
@@ -143,14 +153,13 @@ namespace Hotel.Web.Controllers
         [Authorize]
         public IActionResult BookingDetails(int bookingId)
         {
-            Booking bookingFromDb = _unitOfWork.Booking.Get(b => b.Id == bookingId,
-                                    includeProperties: "User,Villa");
+            Booking bookingFromDb = _bookingService.GetBookingById(bookingId);
 
             if (bookingFromDb.VillaNumber == 0 && bookingFromDb.Status == SD.Status_Approved)
             {
                 var availableRooms = AvailabeRoomsByVilla(bookingFromDb.VillaId);
 
-                bookingFromDb.VillaNumbers = _unitOfWork.VillaNumber.GetAll(u => u.VillaId == bookingFromDb.VillaId
+                bookingFromDb.VillaNumbers = _villaNumberService.GetAllVillaNumbers().Where(u => u.VillaId == bookingFromDb.VillaId
                 && availableRooms.Any(x => x == u.Villa_Number)).ToList();
             }
 
@@ -161,10 +170,9 @@ namespace Hotel.Web.Controllers
         {
             List<int> availableVillaNumbers = new();
 
-            var villaNumbers = _unitOfWork.VillaNumber.GetAll(u => u.VillaId == villaId);
-            var checkInVilla = _unitOfWork.Booking.GetAll(u => u.VillaId == villaId
-                                && u.Status == SD.Status_CheckIn)
-                                .Select(u => u.VillaNumber);
+            var villaNumbers = _villaNumberService.GetAllVillaNumbers().Where(u => u.VillaId == villaId);
+
+            var checkInVilla = _bookingService.GetCheckedInVillaNumbers(villaId);
 
             foreach (var villaNumber in villaNumbers)
             {
@@ -180,8 +188,7 @@ namespace Hotel.Web.Controllers
         public IActionResult CheckIn(Booking booking)
         {
             booking.ActualCheckInDate = DateTime.Now;
-            _unitOfWork.Booking.UpdateStatus(booking.Id, SD.Status_CheckIn, booking.VillaNumber);
-            _unitOfWork.Save();
+            _bookingService.UpdateStatus(booking.Id, SD.Status_CheckIn, booking.VillaNumber);
 
             TempData["success"] = "Booking updated successfully.";
             return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
@@ -191,8 +198,7 @@ namespace Hotel.Web.Controllers
         public IActionResult CheckOut(Booking booking)
         {
             booking.ActualCheckOutDate = DateTime.Now;
-            _unitOfWork.Booking.UpdateStatus(booking.Id, SD.Status_Completed, booking.VillaNumber);
-            _unitOfWork.Save();
+            _bookingService.UpdateStatus(booking.Id, SD.Status_Completed, booking.VillaNumber);
 
             TempData["success"] = "Booking completed  successfully.";
             return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
@@ -201,8 +207,7 @@ namespace Hotel.Web.Controllers
         [HttpPost]
         public IActionResult CancelBooking(Booking booking)
         {
-            _unitOfWork.Booking.UpdateStatus(booking.Id, SD.Status_Cancelled);
-            _unitOfWork.Save();
+            _bookingService.UpdateStatus(booking.Id, SD.Status_Cancelled);
 
             TempData["success"] = "Booking cancelled successfully.";
             return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
@@ -213,22 +218,21 @@ namespace Hotel.Web.Controllers
         public IActionResult GetAll(string status)
         {
             IEnumerable<Booking> objBookings;
+            string userId = "";
 
-            if (User.IsInRole(SD.Role_Admin))
+            if (string.IsNullOrEmpty(status))
             {
-                objBookings = _unitOfWork.Booking.GetAll(includeProperties: "User,Villa");
+                status = "";
             }
-            else
+
+            if (!User.IsInRole(SD.Role_Admin))
             {
                 var claimsIdentity = (ClaimsIdentity)User.Identity;
-                var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+                userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-                objBookings = _unitOfWork.Booking.GetAll(u => u.UserId == userId, includeProperties: "User,Villa");
             }
-            if (!string.IsNullOrEmpty(status))
-            {
-                objBookings = objBookings.Where(u => u.Status.ToLower().Equals(status.ToLower()));
-            }
+            objBookings = _bookingService.GetAllBookings(userId, status);
+            
             return Json(new { data = objBookings });
         }
         #endregion

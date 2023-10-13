@@ -1,4 +1,4 @@
-﻿using Hotel.Application.Dto;
+﻿using Hotel.Application.Common.Dto;
 using Hotel.Domain.Entities;
 
 namespace Hotel.Application.Common.Interfaces

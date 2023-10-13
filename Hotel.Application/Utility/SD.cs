@@ -1,4 +1,5 @@
-﻿using Hotel.Domain.Entities;
+﻿using Hotel.Application.Common.Dto;
+using Hotel.Domain.Entities;
 
 namespace Hotel.Application.Utility
 {
@@ -27,6 +28,25 @@ namespace Hotel.Application.Utility
             TimeOnly timeOnly = new TimeOnly(timeNow.Hours,timeNow.Minutes,timeNow.Seconds);
 
             return date.ToDateTime(timeOnly);
+        }
+
+        public static RadialBarChartDto GetRadialCartDataModel(decimal totalCount, decimal currentMonthCount, decimal previousMonthCount)
+        {
+            RadialBarChartDto radialBarChartVM = new();
+
+            int IncreaseDecreaseRatio = 100;
+
+            if (previousMonthCount != 0)
+            {
+                IncreaseDecreaseRatio = Convert.ToInt32((currentMonthCount - previousMonthCount) / previousMonthCount * 100);
+            }
+
+            radialBarChartVM.TotalCount = totalCount;
+            radialBarChartVM.CountInCurrentMonth = currentMonthCount;
+            radialBarChartVM.HasRatioIncreased = currentMonthCount > previousMonthCount;
+            radialBarChartVM.Series = new int[] { IncreaseDecreaseRatio };
+
+            return radialBarChartVM;
         }
     }
 }

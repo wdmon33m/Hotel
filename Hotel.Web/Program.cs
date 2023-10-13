@@ -1,4 +1,6 @@
 using Hotel.Application.Common.Interfaces;
+using Hotel.Application.Services.Implementation;
+using Hotel.Application.Services.Interface;
 using Hotel.Application.Utility;
 using Hotel.Domain.Entities;
 using Hotel.Infrastructure.Data;
@@ -19,6 +21,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 });
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDashBoardService, DashBoardService>();
+builder.Services.AddScoped<IVillaService, VillaService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IVillaNumberService, VillaNumberService>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 

@@ -1,6 +1,6 @@
 ﻿using Azure;
+using Hotel.Application.Common.Dto;
 using Hotel.Application.Common.Interfaces;
-using Hotel.Application.Dto;
 using Hotel.Domain.Entities;
 using Hotel.Infrastructure.Data;
 
